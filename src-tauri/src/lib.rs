@@ -8,6 +8,7 @@ use std::sync::Mutex;
 use rusqlite::Connection;
 use tauri::{Manager, State};
 
+pub mod clipboard;
 pub mod db;
 use db::ClipItem;
 
@@ -33,6 +34,13 @@ fn delete_clipboard_item(id: i64, state: State<'_, AppState>) -> Result<(), Stri
     db::delete_item(&conn, id).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn write_to_clipboard(content: String) -> Result<(), String> {
+    let mut cb = arboard::Clipboard::new().map_err(|e| e.to_string())?;
+    cb.set_text(content).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -47,6 +55,9 @@ pub fn run() {
                 db: Mutex::new(db_conn),
             });
 
+            // Spawn clipboard monitor
+            clipboard::spawn_monitor(app.handle().clone());
+
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
@@ -54,7 +65,8 @@ pub fn run() {
             greet,
             get_clipboard_items,
             toggle_item_pin,
-            delete_clipboard_item
+            delete_clipboard_item,
+            write_to_clipboard
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
