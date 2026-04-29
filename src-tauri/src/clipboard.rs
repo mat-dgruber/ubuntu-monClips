@@ -11,39 +11,49 @@ struct Handler {
 
 impl ClipboardHandler for Handler {
     fn on_clipboard_change(&mut self) -> CallbackResult {
-        // Debounce/delay slightly to let the clipboard settle
-        thread::sleep(Duration::from_millis(50));
+        let app_handle = self.app.clone();
+        let last_content_arc = self.last_content.clone();
 
-        let mut clipboard = match arboard::Clipboard::new() {
-            Ok(c) => c,
-            Err(_) => return CallbackResult::Next,
-        };
+        // Spawn a task to handle the read without blocking the master thread too much
+        tauri::async_runtime::spawn(async move {
+            // Give the OS a moment to finish the clipboard write
+            tokio::time::sleep(Duration::from_millis(150)).await;
 
-        if let Ok(text) = clipboard.get_text() {
-            let text = text.trim().to_string();
-            if text.is_empty() {
-                return CallbackResult::Next;
+            let mut clipboard = match arboard::Clipboard::new() {
+                Ok(c) => c,
+                Err(_) => return,
+            };
+
+            // Retry up to 3 times with small delays if it fails
+            let mut text = None;
+            for _ in 0..3 {
+                if let Ok(t) = clipboard.get_text() {
+                    text = Some(t);
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(100)).await;
             }
 
-            let mut last = self.last_content.lock().unwrap();
-            if *last != text {
-                *last = text.clone();
+            if let Some(text) = text {
+                let text = text.trim().to_string();
+                if text.is_empty() {
+                    return;
+                }
 
-                // We need to access DB to insert
-                let app_clone = self.app.clone();
-                let text_clone = text.clone();
+                let mut last = last_content_arc.lock().unwrap();
+                if *last != text {
+                    *last = text.clone();
 
-                tauri::async_runtime::spawn(async move {
-                    let state = app_clone.state::<crate::AppState>();
+                    let state = app_handle.state::<crate::AppState>();
                     let conn = state.db.lock().unwrap();
-                    if let Ok(_) = crate::db::insert_item(&conn, &text_clone) {
-                        // In Tauri v2, emitting events uses Emitter trait which is in scope via tauri::Manager
+                    if let Ok(_) = crate::db::insert_item(&conn, &text) {
                         use tauri::Emitter;
-                        let _ = app_clone.emit("clipboard_updated", ());
+                        let _ = app_handle.emit("clipboard_updated", ());
                     }
-                });
+                }
             }
-        }
+        });
+
         CallbackResult::Next
     }
 
