@@ -1,50 +1,54 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import { useClipboard } from './hooks/useClipboard';
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const { items, searchQuery, setSearchQuery, togglePin, deleteItem, copyToClipboard, openUrl } = useClipboard();
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+  const isUrl = (str: string) => /^https?:\/\//i.test(str);
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
+    <div className="flex flex-col h-screen bg-gray-50 text-gray-900">
+      <header className="p-4 bg-white border-b sticky top-0 z-10">
         <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+          type="text"
+          placeholder="Search clips..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+      </header>
+
+      <main className="flex-1 overflow-y-auto p-4 space-y-2">
+        {items.length === 0 ? (
+          <p className="text-center text-gray-500 mt-10">No clips found.</p>
+        ) : (
+          items.map(item => (
+            <div key={item.id} className="group flex items-start p-3 bg-white border rounded-md shadow-sm hover:border-blue-300 relative pr-16">
+               <div
+                  className="flex-1 overflow-hidden cursor-pointer"
+                  onClick={() => isUrl(item.content) ? openUrl(item.content) : copyToClipboard(item.content)}
+                >
+                  <p className="whitespace-pre-wrap break-words text-sm">{item.content}</p>
+               </div>
+
+               <div className="absolute right-2 top-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => togglePin(item.id)}
+                    className={`p-1 rounded hover:bg-gray-100 ${item.pinned ? 'text-blue-500' : 'text-gray-400'}`}
+                  >
+                    {item.pinned ? '★' : '☆'}
+                  </button>
+                  <button
+                    onClick={() => deleteItem(item.id)}
+                    className="p-1 rounded text-red-400 hover:bg-red-50 hover:text-red-600"
+                  >
+                    ✕
+                  </button>
+               </div>
+            </div>
+          ))
+        )}
+      </main>
+    </div>
   );
 }
 
