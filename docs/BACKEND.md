@@ -16,12 +16,14 @@ The backend of monClips is written in Rust using the Tauri framework. It follows
 We use the `rusqlite` crate with the `"bundled"` feature to embed SQLite directly into the binary, removing the need for external database dependencies on the host OS.
 
 ### Schema: `clipboard_items`
+
 - `id` (INTEGER PRIMARY KEY)
 - `content` (TEXT NOT NULL)
 - `created_at` (INTEGER NOT NULL): Stored as Unix timestamp.
 - `pinned` (INTEGER NOT NULL DEFAULT 0): Handled as a boolean (0 or 1).
 
 ### State Management
+
 The database connection is created during Tauri's `setup` hook and wrapped in an `Arc<Mutex<Connection>>` (stored inside `AppState`). This allows thread-safe access from both the background clipboard listener and incoming IPC command requests.
 
 ## 2. Clipboard Monitoring (`src/clipboard.rs`)
@@ -36,6 +38,7 @@ Unlike basic clipboard managers that use interval polling (which drains battery 
 ## 3. TTL Cleanup
 
 Unpinned items should only live for 24 hours.
+
 - This logic is executed via `db::cleanup_expired(&conn)`.
 - It calculates a `cutoff` timestamp (`now - 24 hours`) and deletes all rows where `created_at < cutoff AND pinned = 0`.
 - **Trigger:** Currently, this routine runs immediately upon application startup.
