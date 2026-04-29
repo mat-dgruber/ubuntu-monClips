@@ -59,10 +59,27 @@ pub fn detect_category(content: &str) -> &'static str {
     if content.starts_with('#') && (content.len() == 4 || content.len() == 7 || content.len() == 9) && content[1..].chars().all(|c| c.is_ascii_hexdigit()) {
         return "Color";
     }
-    // Simple code detection
-    if content.contains("fn ") || content.contains("function ") || content.contains("const ") || content.contains("let ") || content.contains("class ") || content.contains("import ") || (content.contains('{') && content.contains('}')) {
+    
+    // Improved code detection heuristics
+    let code_indicators = [
+        "fn ", "function ", "const ", "let ", "class ", "import ", 
+        "pub ", "use ", "static ", "struct ", "enum ", "interface ", 
+        "include ", "#include", "std::", "package ", "public class ", 
+        "private ", "protected ", "void ", "int ", "bool ", "float ", 
+        "async ", "await ", "return ", "if (", "while (", "for (", 
+        "printf(", "println!", "console.log(", "fmt.Println(",
+        "<?php", "module.exports", "export default", "=>"
+    ];
+
+    if code_indicators.iter().any(|&indicator| content.contains(indicator)) 
+        || (content.contains('{') && content.contains('}')) 
+        || content.contains(");") 
+        || content.contains("];")
+        || content.contains("=>")
+    {
         return "Code";
     }
+    
     "Text"
 }
 
