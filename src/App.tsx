@@ -30,24 +30,24 @@ function App() {
   const isUrl = (str: string) => /^https?:\/\//i.test(str);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-950 text-gray-100 font-sans selection:bg-blue-500/30 overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#0a0514] text-gray-100 font-sans selection:bg-purple-500/30 overflow-hidden">
       <Toaster position="bottom-right" toastOptions={{
         style: {
-          background: '#1f2937',
+          background: '#1a0b2e',
           color: '#f3f4f6',
-          border: '1px solid #374151'
+          border: '1px solid #3b1e6d'
         }
       }} />
       
-      <header className="p-4 bg-gray-900/50 backdrop-blur-md border-b border-gray-800 shrink-0 z-20">
+      <header className="p-4 bg-[#120626]/80 backdrop-blur-md border-b border-[#2d1554] shrink-0 z-20">
         <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400 group-focus-within:text-purple-300 transition-colors" />
           <input 
             type="text" 
             placeholder="Search clipboard history..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all placeholder:text-gray-600"
+            className="w-full pl-10 pr-4 py-2 bg-[#1a0b2e] border border-[#3b1e6d] rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all placeholder:text-purple-900"
           />
         </div>
       </header>
@@ -88,10 +88,10 @@ function App() {
                     transform: `translateY(${virtualItem.start}px)`,
                   }}
                 >
-                  <div className="group flex flex-col p-4 bg-gray-900 border border-gray-800 rounded-xl shadow-sm hover:border-gray-600 hover:bg-gray-800/80 transition-all duration-200 relative overflow-hidden">
+                  <div className="group flex flex-col p-4 bg-[#150a24] border border-[#2d1554] rounded-xl shadow-sm hover:border-purple-500/50 hover:bg-[#1c0d33] transition-all duration-200 relative overflow-hidden">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center space-x-2">
-                        <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">
+                        <span className="text-[10px] uppercase tracking-wider text-purple-400 font-bold">
                           {new Date(item.created_at * 1000).toLocaleString()}
                         </span>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter ${
@@ -137,7 +137,7 @@ function App() {
                       <p className="text-sm text-gray-300 whitespace-pre-wrap break-words line-clamp-6 group-hover/content:text-white transition-colors">
                         {item.content}
                       </p>
-                      <div className="absolute inset-x-0 bottom-0 h-1 bg-blue-500 transform scale-x-0 group-hover/content:scale-x-100 transition-transform origin-left" />
+                      <div className="absolute inset-x-0 bottom-0 h-1 bg-purple-500 transform scale-x-0 group-hover/content:scale-x-100 transition-transform origin-left" />
                     </div>
                     
                     {item.pinned && (
@@ -170,11 +170,11 @@ function App() {
         )}
       </main>
       
-      <footer className="px-4 py-2 bg-gray-900 border-t border-gray-800 text-[10px] text-gray-600 flex justify-between items-center shrink-0">
-        <span>Press <kbd className="px-1.5 py-0.5 bg-gray-800 rounded border border-gray-700 text-gray-400">Alt + C</kbd> to toggle window</span>
+      <footer className="px-4 py-2 bg-[#0d041a] border-t border-[#2d1554] text-[10px] text-purple-400/60 flex justify-between items-center shrink-0">
+        <span>Press <kbd className="px-1.5 py-0.5 bg-[#1a0b2e] rounded border border-[#3b1e6d] text-purple-300">Alt + C</kbd> to toggle window</span>
         <div className="flex items-center space-x-3">
           <span>{items.length} items</span>
-          <div className={`w-2 h-2 rounded-full ${isLoading ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
+          <div className={`w-2 h-2 rounded-full ${isLoading ? 'bg-purple-500 animate-pulse' : 'bg-green-500'}`} />
         </div>
       </footer>
     </div>
