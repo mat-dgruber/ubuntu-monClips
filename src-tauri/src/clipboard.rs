@@ -1,8 +1,8 @@
 use clipboard_master::{CallbackResult, ClipboardHandler, Master};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use tauri::{AppHandle, Manager};
 use std::time::Duration;
+use tauri::{AppHandle, Manager};
 
 struct Handler {
     app: AppHandle,
