@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "monclips-app",
         "width": 800,
         "height": 600
