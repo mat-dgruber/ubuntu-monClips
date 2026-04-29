@@ -52,30 +52,52 @@ pub fn init(app_dir: &PathBuf) -> Result<Connection> {
 
 pub fn detect_category(content: &str) -> &'static str {
     let content = content.trim();
+    if content.is_empty() {
+        return "Text";
+    }
+
+    // URL detection
     if content.starts_with("http://") || content.starts_with("https://") {
         return "URL";
     }
+
     // Color detection (hex)
     if content.starts_with('#') && (content.len() == 4 || content.len() == 7 || content.len() == 9) && content[1..].chars().all(|c| c.is_ascii_hexdigit()) {
         return "Color";
     }
+
+    // Markdown detection
+    if content.starts_with("# ") || content.starts_with("## ") || content.starts_with("### ") 
+        || (content.contains("```") && content.len() > 6)
+        || (content.contains("* ") || content.contains("- ")) && content.contains('\n')
+        || (content.contains("[") && content.contains("](") && content.contains(")"))
+    {
+        return "Markdown";
+    }
     
     // Improved code detection heuristics
-    let code_indicators = [
+    let code_keywords = [
         "fn ", "function ", "const ", "let ", "class ", "import ", 
         "pub ", "use ", "static ", "struct ", "enum ", "interface ", 
         "include ", "#include", "std::", "package ", "public class ", 
         "private ", "protected ", "void ", "int ", "bool ", "float ", 
         "async ", "await ", "return ", "if (", "while (", "for (", 
         "printf(", "println!", "console.log(", "fmt.Println(",
-        "<?php", "module.exports", "export default", "=>"
+        "<?php", "module.exports", "export default"
     ];
 
-    if code_indicators.iter().any(|&indicator| content.contains(indicator)) 
-        || (content.contains('{') && content.contains('}')) 
-        || content.contains(");") 
-        || content.contains("];")
-        || content.contains("=>")
+    // Structural indicators of code
+    let has_braces = content.contains('{') && content.contains('}');
+    let has_semicolon_end = content.ends_with(';') || content.contains(");") || content.contains("];");
+    let has_arrow = content.contains("=>") || content.contains("->");
+    
+    // Count how many keywords we find
+    let keyword_count = code_keywords.iter().filter(|&&k| content.contains(k)).count();
+
+    if (keyword_count >= 2) 
+        || (keyword_count >= 1 && (has_braces || has_semicolon_end || has_arrow))
+        || (has_braces && has_semicolon_end)
+        || content.contains("```") // Redundant but safe
     {
         return "Code";
     }

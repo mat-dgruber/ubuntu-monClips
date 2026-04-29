@@ -98,6 +98,7 @@ function App() {
                           item.category === 'URL' ? 'bg-blue-500/20 text-blue-400' :
                           item.category === 'Code' ? 'bg-purple-500/20 text-purple-400' :
                           item.category === 'Color' ? 'bg-green-500/20 text-green-400' :
+                          item.category === 'Markdown' ? 'bg-amber-500/20 text-amber-400' :
                           'bg-gray-500/20 text-gray-400'
                         }`}>
                           {item.category}
