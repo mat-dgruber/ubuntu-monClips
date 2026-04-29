@@ -23,29 +23,29 @@
 monClips uses a **"Thick Backend"** architecture, separating concerns between a highly performant system layer and a reactive UI layer.
 
 ```mermaid
-graph LR
-    subgraph OS[Operating System]
+graph TD
+    subgraph OS [Operating System]
         CB[(System Clipboard)]
     end
 
-    subgraph TauriApp[monClips (Tauri)]
-        subgraph Backend[Rust Core]
+    subgraph TauriApp [monClips App]
+        subgraph Backend [Rust Core]
             Listener[Event Listener]
-            DB[(SQLite)]
-            TTL[Cleanup Routine]
+            DB[(SQLite Database)]
+            TTL[TTL Cleanup]
         end
         
-        subgraph Frontend[React UI]
-            React[Hooks & State]
-            UI[Tailwind + shadcn]
+        subgraph Frontend [React UI]
+            State[Hooks & State]
+            UI[Tailwind UI]
         end
     end
 
-    CB -- "Triggers event" --> Listener
-    Listener -- "Saves new clip" --> DB
-    Listener -- "Emits clipboard_updated" --> React
-    React -- "Invokes commands" --> Backend
-    TTL -. "Deletes old unpinned" .-> DB
+    CB -->|Triggers OS event| Listener
+    Listener -->|Saves new clip| DB
+    Listener -->|Emits 'clipboard_updated'| State
+    State -->|Invokes IPC commands| Backend
+    TTL -.->|Deletes old unpinned| DB
 ```
 
 📚 **Deep Dives:**
